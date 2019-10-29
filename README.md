@@ -23,7 +23,7 @@
 *In case of errors, ensure your compile sources are correct.  Verify they include all aws files.*
 
 ## Code Sample
-- To send an upload to the Medidata cloud use the following code sample.
+- To upload sensor data to the Medidata cloud use the following code sample.
 
         let contentString = "Todd Landman, nevertheless, draws our attention to the fact that democracy and human rights are two different concepts and that there must be greater specificity in the conceptualisation and operationalization of democracy and human rights"
         let stringData = contentString.data(using: .utf8)!
