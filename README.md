@@ -23,10 +23,24 @@ In case of errors, ensure your compile sources are correct!  Verify they include
 To initiate an upload to the medidata cloud use the following code sample.
 
         let contentString = "Todd Landman, nevertheless, draws our attention to the fact that democracy and human rights are two different concepts and that there must be greater specificity in the conceptualisation and operationalization of democracy and human rights"
-
         let stringData = contentString.data(using: .utf8)!
-
-        let filename = "client_test_file.txt" # must follow s3 naming conventions
-
-        EproEndpoint.executeIngestionRequest(medistranoStage: MedistranoStage.production, user: "njacobseprotest@mdsol.com", password: "Password1", subjectUuid: "309f0c35-a464-450f-b3fd-2d9c3037041b", data: stringData, filename: filename)
-
+        
+        let filename = "test_file2.txt"
+        
+        let completionHandler : AWSS3TransferUtilityUploadCompletionHandlerBlock = { (task, error) -> Void in
+            let t = task as AWSS3TransferUtilityUploadTask
+            print(t.request?.description)
+            if ((error) != nil){
+                
+                //handle errors
+                print(t.response?.description)
+                print("Upload failed")
+                print(error!.localizedDescription)
+            }else{
+                //handle success
+                print("File uploaded successfully")
+            }
+        }
+        
+        EproEndpoint.executeIngestionRequest(medistranoStage: MedistranoStage.production, user: "njacobseprotest@mdsol.com", password: "Password1", subjectUuid: "309f0c35-a464-450f-b3fd-2d9c3037041b", data: stringData, filename: filename, completionHandler: completionHandler)
+        

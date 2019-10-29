@@ -45,10 +45,8 @@ public enum EproEndpoint {
         case notFound = 404
     }
     
-    // auth token comes from subjects (app connect admin app in imedidata)
-    
     /// Retrieves a list of studies a given user has access to
-    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String) {
+    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, completionHandler: @escaping AWSS3TransferUtilityUploadCompletionHandlerBlock) {
         
         guard var components = URLComponents(url: medistranoStage.eproURL, resolvingAgainstBaseURL: false) else { return }
         
@@ -75,12 +73,15 @@ public enum EproEndpoint {
                     let bucket_name = endpoint_json!["bucket_name"] as? String
                     let object_key_prefix = endpoint_json!["object_key_prefix"] as? String
 
-                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data, filename: filename)
+                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data, filename: filename, completionHandler: completionHandler)
 
                     }
             case .failure(let error):
                 Logger.error(error.localizedDescription)
-                //callback(.failure(error))
+            
+                let uploadTask = AWSS3TransferUtilityUploadTask()
+                completionHandler(uploadTask,error)
+                    
             }
         }
     }
@@ -93,7 +94,8 @@ public enum EproEndpoint {
                                              bucket_name:String,
                                              aws_region:String,
                                              content_data:Data,
-                                             filename:String) {
+                                             filename:String,
+                                             completionHandler: @escaping AWSS3TransferUtilityUploadCompletionHandlerBlock) {
 
         let full_file_path = file_path + "/" + filename
                 
@@ -103,26 +105,6 @@ public enum EproEndpoint {
         
         let tokenExpirationDate = dateFormatter.date(from:expirationDateString)!
         print(tokenExpirationDate)
-        
-        let completionHandler : AWSS3TransferUtilityUploadCompletionHandlerBlock? =
-        { (task, error) -> Void in
-            
-            let t = task as AWSS3TransferUtilityUploadTask
-            print(t.request?.description)
-            print("----------------")
-            if ((error) != nil)
-            {
-                print(t.response?.description)
-                print("Upload failed")
-                print(error!.localizedDescription)
-            }
-            else
-            {
-              print("File uploaded successfully")
-            }
-        }
-        
-        
         
         let region = AWSRegionType.USEast1  //we currently only support us-east
         let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
