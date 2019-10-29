@@ -75,7 +75,7 @@ public enum EproEndpoint {
                     let bucket_name = endpoint_json!["bucket_name"] as? String
                     let object_key_prefix = endpoint_json!["object_key_prefix"] as? String
 
-                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data)
+                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data, filename: filename)
 
                     }
             case .failure(let error):
@@ -92,9 +92,9 @@ public enum EproEndpoint {
                                              file_path: String,
                                              bucket_name:String,
                                              aws_region:String,
-                                             content_data:Data) {
+                                             content_data:Data,
+                                             filename:String) {
 
-        let filename = "test_file1.txt"
         let full_file_path = file_path + "/" + filename
                 
         let dateFormatter = DateFormatter()
