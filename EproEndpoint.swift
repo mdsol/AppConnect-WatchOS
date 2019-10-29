@@ -78,10 +78,7 @@ public enum EproEndpoint {
                     }
             case .failure(let error):
                 Logger.error(error.localizedDescription)
-            
-                let uploadTask = AWSS3TransferUtilityUploadTask()
-                completionHandler(uploadTask,error)
-                    
+                completionHandler(AWSS3TransferUtilityUploadTask(),error)
             }
         }
     }
@@ -104,7 +101,6 @@ public enum EproEndpoint {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
         
         let tokenExpirationDate = dateFormatter.date(from:expirationDateString)!
-        print(tokenExpirationDate)
         
         let region = AWSRegionType.USEast1  //we currently only support us-east
         let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
@@ -116,10 +112,10 @@ public enum EproEndpoint {
 
         transferUtility.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
                        if let error = task.error{
-                           print("upload error!")
-                       }
-                       if let uploadTask = task.result{
-                           print("Upload started...")
+                        Logger.error("upload error!")
+                        completionHandler(AWSS3TransferUtilityUploadTask(),error)
+                       }else if let uploadTask = task.result{
+                        Logger.info("Upload started...")
                        }
                        return nil
                }
@@ -175,6 +171,7 @@ public enum EproEndpoint {
                     }
                 } else if let error = error {
                     Logger.error("[ErrorMessage]: \(error.localizedDescription)")
+                    callback(.failure(.serverError(error: .noResponseData)))
                 } else {
                     callback(.failure(.serverError(error: .noResponseData)))
                 }
