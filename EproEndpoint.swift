@@ -107,13 +107,11 @@ public enum EproEndpoint {
         let completionHandler : AWSS3TransferUtilityUploadCompletionHandlerBlock? =
         { (task, error) -> Void in
             
-           let t = task as AWSS3TransferUtilityUploadTask
-           
+            let t = task as AWSS3TransferUtilityUploadTask
+            print(t.request?.description)
+            print("----------------")
             if ((error) != nil)
             {
-                print(t.request?.description)
-                print(t.bucket)
-                print("----------------")
                 print(t.response?.description)
                 print("Upload failed")
                 print(error!.localizedDescription)
@@ -124,10 +122,11 @@ public enum EproEndpoint {
             }
         }
         
+        
+        
         let region = AWSRegionType.USEast1  //we currently only support us-east
-   
         let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
-        var configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
+        let configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
         AWSServiceManager.default().defaultServiceConfiguration = configuration
         let transferUtility = AWSS3TransferUtility.default()
         let expression = AWSS3TransferUtilityUploadExpression()
