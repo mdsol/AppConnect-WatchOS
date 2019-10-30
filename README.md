@@ -10,7 +10,7 @@
 - Highlight all files and folders in AppConnect-WatchOS.
 - Under `Add to targets` check the box to select your targeted WatchOS extension app.
 
-*We don't need xcode to automatically configure a bridging header, althgouh there will be no harm if you accidentily add one.*
+*We don't need xcode to automatically configure a bridging header, although there will be no harm if you accidentily add one.*
 
 ### 3.  Configure files
 - Navigate to the `Build Settings` for your target app.  Click `Objetive-c Bridging Header` under `Swift Compiler - General` .
