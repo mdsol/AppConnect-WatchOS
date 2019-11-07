@@ -12,6 +12,7 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
+// Modified by Nathaniel Jacobs on 10/20/2019
 
 #import <Foundation/Foundation.h>
 #import "AWSServiceEnum.h"
