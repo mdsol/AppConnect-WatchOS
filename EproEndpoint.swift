@@ -45,7 +45,7 @@ public enum EproEndpoint {
         case notFound = 404
     }
     
-    /// Retrieves a list of studies a given user has access to
+    /// Retrieves a list of studies a given user has access to and sends to the first ingestion endpoint
     public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, completionHandler: @escaping AWSS3TransferUtilityUploadCompletionHandlerBlock) {
         
         guard var components = URLComponents(url: medistranoStage.eproURL, resolvingAgainstBaseURL: false) else { return }
