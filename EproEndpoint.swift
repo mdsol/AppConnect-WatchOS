@@ -78,7 +78,7 @@ public enum EproEndpoint {
                     }
             case .failure(let error):
                 Logger.error(error.localizedDescription)
-                mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription)
+                mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription, fileName: filename)
                // completionHandler(AWSS3TransferUtilityUploadTask(),error)
             }
         }
@@ -118,16 +118,16 @@ public enum EproEndpoint {
                  if ((error) != nil){
                     print("Upload failed")
                     print(error!.localizedDescription)
-                    mediUploadable.uploadCompleted(success: false, errorMessage: error!.localizedDescription)
+                    mediUploadable.uploadCompleted(success: false, errorMessage: error!.localizedDescription, fileName: filename)
                  }else{
                     print("File uploaded successfully")
-                    mediUploadable.uploadCompleted(success: true, errorMessage: "")
+                    mediUploadable.uploadCompleted(success: true, errorMessage: "", fileName: filename)
                  }
              }
             transferUtility.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
                            if let error = task.error{
                             Logger.error("upload error!")
-                            mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription)
+                            mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription, fileName: filename)
                            }else if let uploadTask = task.result{
                             Logger.info("Upload started...")
                            }

@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol mediUploadable {
-    func uploadCompleted(success:Bool, message:String)
+public protocol mediUploadable {
+    func uploadCompleted(success:Bool, errorMessage:String, fileName: String)
 }
