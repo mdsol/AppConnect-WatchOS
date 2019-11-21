@@ -46,7 +46,7 @@ public enum EproEndpoint {
     }
     
     /// Retrieves a list of studies a given user has access to and sends to the first ingestion endpoint
-    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, completionHandler: @escaping AWSS3TransferUtilityUploadCompletionHandlerBlock) {
+    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, mediUploadable: mediUploadable) {
         
         guard var components = URLComponents(url: medistranoStage.eproURL, resolvingAgainstBaseURL: false) else { return }
         
@@ -73,12 +73,13 @@ public enum EproEndpoint {
                     let bucket_name = endpoint_json!["bucket_name"] as? String
                     let object_key_prefix = endpoint_json!["object_key_prefix"] as? String
 
-                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data, filename: filename, completionHandler: completionHandler)
+                    return uploadtoSignedUrl(access_key_id: access_key_id!, secret_access_key:secret_access_key!, session_token:session_token!, expirationDateString: expiration!, file_path:object_key_prefix!, bucket_name: bucket_name!, aws_region: aws_region!, content_data: data, filename: filename, mediUploadable: mediUploadable)
 
                     }
             case .failure(let error):
                 Logger.error(error.localizedDescription)
-                completionHandler(AWSS3TransferUtilityUploadTask(),error)
+                mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription)
+               // completionHandler(AWSS3TransferUtilityUploadTask(),error)
             }
         }
     }
@@ -92,7 +93,7 @@ public enum EproEndpoint {
                                              aws_region:String,
                                              content_data:Data,
                                              filename:String,
-                                             completionHandler: @escaping AWSS3TransferUtilityUploadCompletionHandlerBlock) {
+                                             mediUploadable: mediUploadable) {
 
         let full_file_path = file_path + "/" + filename
                 
@@ -102,23 +103,37 @@ public enum EproEndpoint {
         
         let tokenExpirationDate = dateFormatter.date(from:expirationDateString)!
         
-        let region = AWSRegionType.USEast1  //we currently only support us-east
-        let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
-        let configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
-        AWSServiceManager.default().defaultServiceConfiguration = configuration
-        let transferUtility = AWSS3TransferUtility.default()
-        let expression = AWSS3TransferUtilityUploadExpression()
-        expression.setValue("AES256", forRequestHeader: "x-amz-server-side-encryption")
+        let region = AWSRegionType.USEast1  //we currently only support us-east'
+        autoreleasepool {
+            let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
+            let configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
+            AWSServiceManager.default().defaultServiceConfiguration = configuration
+            let transferUtility = AWSS3TransferUtility.default()
+            let expression = AWSS3TransferUtilityUploadExpression()
+            expression.setValue("AES256", forRequestHeader: "x-amz-server-side-encryption")
 
-        transferUtility.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
-                       if let error = task.error{
-                        Logger.error("upload error!")
-                        completionHandler(AWSS3TransferUtilityUploadTask(),error)
-                       }else if let uploadTask = task.result{
-                        Logger.info("Upload started...")
-                       }
-                       return nil
-               }
+            let completionHandler : AWSS3TransferUtilityUploadCompletionHandlerBlock = { (task, error) -> Void in
+                 let t = task as AWSS3TransferUtilityUploadTask
+                 print(t.request?.description)
+                 if ((error) != nil){
+                    print("Upload failed")
+                    print(error!.localizedDescription)
+                    mediUploadable.uploadCompleted(success: false, errorMessage: error!.localizedDescription)
+                 }else{
+                    print("File uploaded successfully")
+                    mediUploadable.uploadCompleted(success: true, errorMessage: "")
+                 }
+             }
+            transferUtility.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
+                           if let error = task.error{
+                            Logger.error("upload error!")
+                            mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription)
+                           }else if let uploadTask = task.result{
+                            Logger.info("Upload started...")
+                           }
+                           return nil
+                   }
+        }
     }
     
     /// URL Session used to make requests
