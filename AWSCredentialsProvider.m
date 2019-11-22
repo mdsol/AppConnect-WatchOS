@@ -12,6 +12,7 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
+// Modified by Nathaniel Jacobs at Medidata Solutions Nov 2019
 
 #import "AWSCredentialsProvider.h"
 #import "AWSCognitoIdentity.h"
@@ -106,9 +107,8 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 - (void)setSessionKey:(NSString *)sessionKey;
 - (void)setExpiration:(NSDate *)expiration;
 
-@property (nonatomic, strong) AWSCredentials *internalCredentials;
+@property (nonatomic, strong) AWSTask *task;
 
- 
 @end
  
 @implementation AWSSTSCredentialsProvider
@@ -119,26 +119,25 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
         self.accessKey = accessKey;
         self.sessionKey = sessionKey;
         self.secretKey = secretKey;
-//        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-//        dateFormatter.dateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSS'Z'";
-//        dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
         self.expiration = expirationDate;
         
-        _internalCredentials = [[AWSCredentials alloc] initWithAccessKey:self.accessKey
-                                                                     secretKey:self.secretKey
-                                                                    sessionKey:self.sessionKey
-                                                                    expiration:self.expiration];
+        
+        self.task = [AWSTask taskWithResult:[[AWSCredentials alloc] initWithAccessKey:self.accessKey
+         secretKey:self.secretKey
+        sessionKey:self.sessionKey
+        expiration:self.expiration]];
     }
     
     return self;
 }
  
 - (nonnull AWSTask<AWSCredentials *> *)credentials {
-    return [AWSTask taskWithResult:self.internalCredentials];
+    return self.task;
 }
 
 - (void)invalidateCachedTemporaryCredentials {
     // No-op
+    printf("Invalidating STS Credentials object");
 }
 
 @end

@@ -26,25 +26,22 @@
 - To upload sensor data to the Medidata cloud use the following code sample.
 
         let contentString = "Todd Landman, nevertheless, draws our attention to the fact that democracy and human rights are two different concepts and that there must be greater specificity in the conceptualisation and operationalization of democracy and human rights"
+
         let stringData = contentString.data(using: .utf8)!
-        
-        let filename = "test_file2.txt" // Files of the same name will be overwritten!  Use a unique filename to avoid collisions. 
-        
-        let completionHandler : AWSS3TransferUtilityUploadCompletionHandlerBlock = { (task, error) -> Void in
-            let t = task as AWSS3TransferUtilityUploadTask
-            print(t.request?.description)
-            if ((error) != nil){
-                
-                //handle errors here
-                print(t.response?.description)
-                print("Upload failed")
-                print(error!.localizedDescription)
-            }else{
-                //handle success here
-                print("File uploaded successfully")
+
+        // filenames must be alpha numeric characters, as well as -_. (hyphen, underscore and period) in the filename.  No special charecters
+        let filename = "test_file" // Files of the same name will be overwritten!  Use a unique filename to avoid collisions.
+
+        class uploadHandler: MediUploadable {
+            public func uploadCompleted(success: Bool, errorMessage: String, fileName: String) {
+                if (success == true) {
+                    print("\(fileName) uploaded successfully")
+                }else{
+                    print("\(fileName) upload failed due to \(errorMessage)")
+                }
             }
         }
-        
+
         // Send the data!
-        EproEndpoint.executeIngestionRequest(medistranoStage: MedistranoStage.production, user: "njacobseprotest@mdsol.com", password: "Password1", subjectUuid: "309f0c35-a464-450f-b3fd-2d9c3037041b", data: stringData, filename: filename, completionHandler: completionHandler)
-        
+        EproEndpoint.executeIngestionRequest(medistranoStage: MedistranoStage.production, user: "eprotest@mdsol.com", password: "Password", subjectUuid: "309f0c35-a464-450f-b3fd-2d9c3037041b", data: stringData, filename: filename, mediUploadable: uploadHandler())
+
