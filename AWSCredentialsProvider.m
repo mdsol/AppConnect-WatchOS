@@ -107,7 +107,6 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 - (void)setSessionKey:(NSString *)sessionKey;
 - (void)setExpiration:(NSDate *)expiration;
 
-//@property (nonatomic, weak) AWSCredentials *internalCredentials;
 @property (nonatomic, strong) AWSTask *task;
 
 @end
@@ -137,6 +136,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 }
 
 - (void)invalidateCachedTemporaryCredentials {
+    // No-op
     printf("Invalidating STS Credentials object");
 }
 
