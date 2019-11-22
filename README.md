@@ -32,7 +32,7 @@
         // filenames must be alpha numeric characters, as well as -_. (hyphen, underscore and period) in the filename.  No special charecters
         let filename = "test_file" // Files of the same name will be overwritten!  Use a unique filename to avoid collisions.
 
-        class uploadHandler: mediUploadable {
+        class uploadHandler: MediUploadable {
             public func uploadCompleted(success: Bool, errorMessage: String, fileName: String) {
                 if (success == true) {
                     print("\(fileName) uploaded successfully")

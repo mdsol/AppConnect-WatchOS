@@ -55,7 +55,7 @@ public enum EproEndpoint {
     }
     
     /// Retrieves a list of studies a given user has access to and sends to the first ingestion endpoint
-    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, mediUploadable: mediUploadable) {
+    public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, mediUploadable: MediUploadable) {
        
         if (fileNameValid(filename: filename) == false){
             mediUploadable.uploadCompleted(success: false, errorMessage: "unsupported characters in filename", fileName: filename)
@@ -106,7 +106,7 @@ public enum EproEndpoint {
                                              aws_region:String,
                                              content_data:Data,
                                              filename:String,
-                                             mediUploadable: mediUploadable) {
+                                             mediUploadable: MediUploadable) {
 
         let full_file_path = file_path + "/" + filename
                 
