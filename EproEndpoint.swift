@@ -45,8 +45,22 @@ public enum EproEndpoint {
         case notFound = 404
     }
     
+    
+    public static func fileNameValid(filename: String) -> Bool {
+        let customCharSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-.").inverted
+        let fileNameCharSet =  CharacterSet(charactersIn: filename)
+        let isValid = customCharSet.isDisjoint(with: fileNameCharSet)
+        
+        return isValid
+    }
+    
     /// Retrieves a list of studies a given user has access to and sends to the first ingestion endpoint
     public static func executeIngestionRequest(medistranoStage: MedistranoStage, user: String, password: String, subjectUuid: String, data: Data, filename: String, mediUploadable: mediUploadable) {
+       
+        if (fileNameValid(filename: filename) == false){
+            mediUploadable.uploadCompleted(success: false, errorMessage: "unsupported characters in filename", fileName: filename)
+            return
+        }
         
         guard var components = URLComponents(url: medistranoStage.eproURL, resolvingAgainstBaseURL: false) else { return }
         
