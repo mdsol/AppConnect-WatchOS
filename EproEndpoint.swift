@@ -120,8 +120,13 @@ public enum EproEndpoint {
         autoreleasepool {
             let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
             let configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
-            AWSServiceManager.default().defaultServiceConfiguration = configuration
-            let transferUtility = AWSS3TransferUtility.default()
+//            //AWSServiceManager.default().defaultServiceConfiguration = configuration
+//            let transferUtility = AWSS3TransferUtility.default()
+//            transferUtility.register(with: configuration!, forKey: session_token)
+//
+//
+            AWSS3TransferUtility.register(with: configuration!, forKey: access_key_id)
+            let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: access_key_id)
             let expression = AWSS3TransferUtilityUploadExpression()
             expression.setValue("AES256", forRequestHeader: "x-amz-server-side-encryption")
 
@@ -134,17 +139,20 @@ public enum EproEndpoint {
                     mediUploadable.uploadCompleted(success: false, errorMessage: error!.localizedDescription, fileName: filename)
                  }else{
                     print("File uploaded successfully")
-                    mediUploadable.uploadCompleted(success: true, errorMessage: "", fileName: filename)
+                   mediUploadable.uploadCompleted(success: true, errorMessage: "", fileName: filename)
                  }
+               // mediUploadable.uploadCompleted(success: false, errorMessage: "unidentified error", fileName: filename)
+                AWSS3TransferUtility.remove(forKey:access_key_id)
              }
             
-            transferUtility.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
+            transferUtility?.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
                    if let error = task.error{
                     Logger.error("upload error!")
                     mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription, fileName: filename)
                    }else if let uploadTask = task.result{
                     Logger.info("Upload started...")
                    }
+                   // mediUploadable.uploadCompleted(success: false, errorMessage: "unidentified error", fileName: filename)
                    return nil
                }
         }
