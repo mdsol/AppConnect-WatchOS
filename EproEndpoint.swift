@@ -135,7 +135,7 @@ public enum EproEndpoint {
                     mediUploadable.uploadCompleted(success: false, errorMessage: error!.localizedDescription, fileName: filename)
                  }else{
                     print("File uploaded successfully")
-                   mediUploadable.uploadCompleted(success: true, errorMessage: "", fileName: filename)
+                    mediUploadable.uploadCompleted(success: true, errorMessage: "", fileName: filename)
                  }
                 AWSS3TransferUtility.remove(forKey:access_key_id)
              }
