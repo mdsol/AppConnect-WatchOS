@@ -121,6 +121,10 @@ public enum EproEndpoint {
             let credentialsProvider = AWSSTSCredentialsProvider(accessKey: access_key_id, secretKey: secret_access_key, sessionKey: session_token, expirationDate: tokenExpirationDate)
             let configuration = AWSServiceConfiguration(region: region, credentialsProvider: credentialsProvider)
 
+            // if network is inaccessable for 30 continuous seconds then the upload will fire the completion handlers with errors
+            configuration?.timeoutIntervalForRequest = 30.0
+            configuration?.timeoutIntervalForResource = 86400
+            
             AWSS3TransferUtility.register(with: configuration!, forKey: access_key_id)
             let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: access_key_id)
             let expression = AWSS3TransferUtilityUploadExpression()
@@ -140,15 +144,30 @@ public enum EproEndpoint {
                 AWSS3TransferUtility.remove(forKey:access_key_id)
              }
             
-            transferUtility?.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AnyObject? in
+           let transferTask: AWSTask? = transferUtility?.uploadData(content_data, bucket: bucket_name, key: full_file_path, contentType: "text/plain", expression: expression, completionHandler: completionHandler).continueWith  { (task : AWSTask) -> AWSS3TransferUtilityUploadTask? in
                    if let error = task.error{
                     Logger.error("upload error!")
                     mediUploadable.uploadCompleted(success: false, errorMessage: error.localizedDescription, fileName: filename)
                    }else if let uploadTask = task.result{
                     Logger.info("Upload started...")
                    }
-                   return nil
-               }
+                    if task.result == nil{
+                        mediUploadable.uploadCompleted(success: false, errorMessage: "error initializing upload, possiblly out of memory", fileName: filename)
+                    }
+                return nil
+            }
+        
+            // confirm upload has been successfully queued
+            let taskNotFaulted = transferTask?.isFaulted != true
+            let taskNotErrored = transferTask?.error == nil
+            let taskNotCancelled = transferTask?.isCancelled != true
+            
+            if (transferTask != nil && transferTask is AWSTask<AWSS3TransferUtilityUploadTask> && taskNotFaulted && taskNotErrored && taskNotCancelled){
+                //no op
+                print("successfully queued upload task")
+            }else{
+                mediUploadable.uploadCompleted(success: false, errorMessage: "failed to initialize aws upload task", fileName: filename)
+            }
         }
     }
     
