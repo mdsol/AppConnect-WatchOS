@@ -14,4 +14,4 @@
 
 ### 1.1.2
 - Improve error handling for AWS S3 uploads
-- If network is inaccessable for 30 continuous seconds then the upload will fire the completion handlers with errors
+- If network is inaccessable for 30 continuous seconds then the upload will fire the completion handler with errors
