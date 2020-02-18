@@ -166,7 +166,7 @@ public enum EproEndpoint {
                 //no op
                 print("successfully queued upload task")
             }else{
-                mediUploadable.uploadCompleted(success: false, errorMessage: "failed to initilize aws upload task", fileName: filename)
+                mediUploadable.uploadCompleted(success: false, errorMessage: "failed to initialize aws upload task", fileName: filename)
             }
         }
     }
